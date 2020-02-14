@@ -16,7 +16,7 @@ class PostCreateUpdateSerializer(ModelSerializer):
         fields = [
             'title',
             'content',
-            'publish', 
+            'image', 
         ]
 
 post_detail_url = HyperlinkedIdentityField(
@@ -30,11 +30,12 @@ class PostListSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = [
+            'id',
+            'slug',
             'url',
             'title',
             'content',
             'user',
-            'publish', 
         ]
 
 class PostDetailSerializer(ModelSerializer):
@@ -53,7 +54,6 @@ class PostDetailSerializer(ModelSerializer):
             'content',
             'html',
             'user',
-            'publish', 
             'comments',
         ]
 

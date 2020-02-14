@@ -10,9 +10,8 @@ django = "*"
 djangorestframework = "*"
 django-markdown-deux = "*"
 django-pagedown = "*"
-django-crispy-forms = "*"
 pillow = "*"
-djangorestframework-jwt = "*"
+django-rest-knox = "*"
 
 [requires]
 python_version = "3.6"

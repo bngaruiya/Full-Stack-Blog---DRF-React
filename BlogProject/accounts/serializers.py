@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.db.models import Q
 
 from rest_framework.serializers import (
@@ -7,11 +8,12 @@ from rest_framework.serializers import (
     EmailField,
     ModelSerializer,
     HyperlinkedIdentityField,
+    Serializer,
     SerializerMethodField,
     ValidationError,
 )
 
-User = get_user_model()
+User._meta.get_field('email')._unique = True
 
 class UserDetailSerializer(ModelSerializer):
     class Meta:
@@ -25,43 +27,26 @@ class UserDetailSerializer(ModelSerializer):
 
 class UserCreateSerializer(ModelSerializer):
     email = EmailField(label = 'Email Address')
-    email2 = EmailField(label = 'Confirm Email')
     class Meta:
         model = User
         fields = [
             'username',
             'email',
-            'email2',
             'password',
         ]
+
         extra_kwargs = {"password": 
                             {"write_only": True}
                         }
-
-    def validate_email2(self, value):
-        data = self.get_initial()
-        email1 = data.get("email")
-        email2 = value
-        if email1 != email2:
-            raise ValidationError("Emails must match!!")
-        user_qs = User.objects.filter(email=email2)
-        if user_qs.exists():
-            raise ValidationError("A user with the provided email is already registered.")
-        return value
 
     def create(self, validated_data):
         username = validated_data["username"]
         email = validated_data["email"]
         password = validated_data["password"]
-
-        user_obj = User(
-            username = username,
-            email = email
-        )
-        user_obj.set_password(password)
-        user_obj.save()
-        
-        return validated_data
+        if email and User.objects.filter(email=email).exists():
+            raise ValidationError('A user with that email already exists')
+        user = User.objects.create_user(username, email, password)
+        return user
 
 class UserLoginSerializer(ModelSerializer):
     token = CharField(allow_blank=True, read_only=True)
@@ -90,14 +75,12 @@ class UserLoginSerializer(ModelSerializer):
             Q(email=email) |
             Q(username=username)
         ).distinct()
-        user = user.exclude(email__isnull=True).exclude(email__iexact='')
         if user.exists() and user.count() == 1:
             user_obj = user.first()
         else:
-            raise ValidationError("This username/email is not valid.")
+            raise ValidationError("Incorrect Credentials.")
         if user_obj:
             if not user_obj.check_password(password):
                 raise ValidationError("Incorrect Credentials. Please try again.")
-        data["token"] = "SOME RANDOM TOKEN"
-
-        return data
+        
+        return user_obj

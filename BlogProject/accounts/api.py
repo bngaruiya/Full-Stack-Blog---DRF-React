@@ -1,59 +1,58 @@
 from django.db.models import Q
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 
 from rest_framework.response import Response
-from rest_framework.status import (
-    HTTP_200_OK,
-    HTTP_400_BAD_REQUEST
-    )
-from rest_framework.views import APIView
-from rest_framework.filters import (
-    SearchFilter,
-    OrderingFilter
-)
-from rest_framework.mixins import (
-    DestroyModelMixin,
-    UpdateModelMixin,
-)
+
 from rest_framework.generics import (
-    CreateAPIView,
+    GenericAPIView,
+    RetrieveAPIView
     )
-from rest_framework.pagination import (
-    LimitOffsetPagination,
-    PageNumberPagination,
-)
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
-    IsAdminUser,
-    IsAuthenticatedOrReadOnly,
 )
+from knox.models import AuthToken
 
-from posts.pagination import (
-    PostLimitOffsetPagination,
-    PostPageNumberPagination,
-    )
 from posts.permissions import IsOwnerOrReadOnly
 from .serializers import (
     UserCreateSerializer,
     UserLoginSerializer,
+    UserDetailSerializer,
     )
 
-User = get_user_model()
-
-class UserCreateAPiView(CreateAPIView):
+class UserCreateAPiView(GenericAPIView):
     serializer_class = UserCreateSerializer
     permission_classes = [AllowAny]
-    queryset = User.objects.all()
 
-class UserLoginAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response({
+            'user': UserDetailSerializer(user, context=self.get_serializer_context()).data,
+            'token': AuthToken.objects.create(user)[1]
+        })
+
+class UserLoginAPIView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = UserLoginSerializer
 
     def post(self, request, *args, **kwargs):
         data = request.data
         serializer = UserLoginSerializer(data=data)
-        if serializer.is_valid(raise_exception=True):
-            new_data = serializer.data
-            return Response(new_data, status=HTTP_200_OK)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data
+        return Response({
+            'user': UserDetailSerializer(user, context=self.get_serializer_context()).data,
+            'token': AuthToken.objects.create(user)[1]
+        })
+
+# Get User Api
+class UserApi(RetrieveAPIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+    serializer_class = UserDetailSerializer
+
+    def get_object(self):
+        return self.request.user

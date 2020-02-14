@@ -9,10 +9,6 @@ from .api import (
     PostDeleteAPIView
 )
 
-from .views import (
-    post_create
-)
-
 app_name = "posts"
 urlpatterns = [
 	path('', PostListAPIView.as_view(), name='list'),

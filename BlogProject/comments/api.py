@@ -17,11 +17,6 @@ from rest_framework.generics import (
     DestroyAPIView,
     )
 
-from rest_framework.pagination import (
-    LimitOffsetPagination,
-    PageNumberPagination,
-)
-
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
@@ -29,10 +24,6 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,
 )
 
-from posts.pagination import (
-    PostLimitOffsetPagination,
-    PostPageNumberPagination,
-    )
 from posts.permissions import IsOwnerOrReadOnly
 from .serializers import (
     CommentListSerializer,
@@ -62,7 +53,6 @@ class CommentListAPIView(ListAPIView):
     permission_classes = [AllowAny]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['content', 'user__first_name']
-    pagination_class = PostPageNumberPagination
 
     def get_queryset(self, *args, **kwargs):
         queryset_list = Comment.objects.filter(id__gte=0)

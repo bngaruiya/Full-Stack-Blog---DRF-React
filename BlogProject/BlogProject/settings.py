@@ -42,10 +42,12 @@ INSTALLED_APPS = [
     'markdown_deux',
     'pagedown',
     'rest_framework',
+    'knox',
     # Local Apps
     'posts',
     'accounts',
-    'comments'
+    'comments',
+    'frontend',
 ]
 
 MIDDLEWARE = [
@@ -134,8 +136,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        # 'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        "knox.auth.TokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         'rest_framework.permissions.IsAuthenticated',

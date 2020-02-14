@@ -11,22 +11,12 @@ from rest_framework.generics import (
     DestroyAPIView,
     )
 
-from rest_framework.pagination import (
-    LimitOffsetPagination,
-    PageNumberPagination,
-)
-
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
     IsAdminUser,
     IsAuthenticatedOrReadOnly,
 )
-
-from .pagination import (
-    PostLimitOffsetPagination,
-    PostPageNumberPagination,
-    )
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (
     PostCreateUpdateSerializer,
@@ -49,7 +39,6 @@ class PostListAPIView(ListAPIView):
     permission_classes = [AllowAny]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['title', 'content', 'user__first_name']
-    pagination_class = PostPageNumberPagination
 
     def get_queryset(self, *args, **kwargs):
         queryset_list = Post.objects.all()

@@ -50,8 +50,6 @@ class Post(models.Model):
             blank=True, 
             )
     content = models.TextField()
-    draft = models.BooleanField(default=False)
-    publish = models.DateField(auto_now=False, auto_now_add=False)
     read_time =  models.IntegerField(default=0) # models.TimeField(null=True, blank=True) #assume minutes
     updated = models.DateTimeField(auto_now=True, auto_now_add=False)
     timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
